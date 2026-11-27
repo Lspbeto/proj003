@@ -13,7 +13,8 @@ function addMessage(role,content,save=true){
   else if(messages.firstElementChild.classList.contains("user"))messages.insertBefore(node,messages.firstElementChild.nextElementSibling);
   else messages.prepend(node);
   if(save){state.messages.push({role,content});try{localStorage.setItem(HISTORY_KEY,JSON.stringify(state.messages.slice(-80)));}catch(_){}}
-  if(role==="user")node.scrollIntoView({behavior:"smooth",block:"start"});
+  // Mantem a pergunta mais recente e a resposta no topo da area rolavel.
+  requestAnimationFrame(()=>messages.scrollTo({top:0,behavior:"smooth"}));
   return bubble;
 }
 function restoreHistory(){
