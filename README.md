@@ -55,3 +55,8 @@ O acesso pela internet, com o notebook desligado, ainda não está configurado. 
 ## Privacidade
 
 O PDF é extraído no navegador e enviado ao servidor local apenas quando você pede uma resposta à IA. Esta versão não armazena arquivos em nuvem. Não envie documentos confidenciais para hospedagens públicas sem revisar a configuração.
+
+
+## Publicação pela internet
+
+Consulte [DEPLOYMENT.md](DEPLOYMENT.md) para criar o serviço no Render e entender as limitações da hospedagem gratuita. A publicação da interface não disponibiliza por si só um modelo de IA: a conexão com IA hospedada ainda precisa ser configurada.
