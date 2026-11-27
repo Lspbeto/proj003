@@ -117,6 +117,7 @@ $("loadText").addEventListener("click",e=>{const text=$("pastedText").value.trim
 $("webSearchBtn").addEventListener("click",()=>{
   const q=$("messageInput").value.trim();
   if(!q){addMessage("assistant","Digite o assunto na caixa de mensagem e toque em Pesquisar na web.");$("messageInput").focus();return;}
+  if(state.mode!=="assistant")setMode("assistant");
   sendMessage(q);
 });
 
