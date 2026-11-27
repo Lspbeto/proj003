@@ -19,8 +19,10 @@ function addMessage(role,content,save=true,timestamp=new Date().toISOString()){
   if(save){state.messages.push({role,content,timestamp});try{localStorage.setItem(HISTORY_KEY,JSON.stringify(state.messages.slice(-80)));}catch(_){}}
   // Mantem a pergunta mais recente e a resposta no topo da area rolavel.
   requestAnimationFrame(()=>messages.scrollTo({top:0,behavior:"smooth"}));
+  if(role==="assistant"){const listen=document.createElement("button");listen.type="button";listen.className="listen-message";listen.textContent="🔊 Ouvir resposta";listen.addEventListener("click",()=>speakText(content));body.append(listen);}
   return bubble;
 }
+function speakText(text){if(!("speechSynthesis" in window)){alert("Leitura em voz alta não disponível neste navegador.");return;}speechSynthesis.cancel();const chunks=String(text).match(/[\\s\\S]{1,1800}(?:\\s|$)/g)||[String(text)];let index=0;const next=()=>{if(index>=chunks.length)return;const u=new SpeechSynthesisUtterance(chunks[index++]);u.lang="pt-BR";u.rate=Number($("speedSelect").value||1);const voices=speechSynthesis.getVoices();const v=voices.find(x=>x.lang.toLowerCase()==="pt-br")||voices.find(x=>x.lang.toLowerCase().startsWith("pt"));if(v)u.voice=v;u.onend=next;speechSynthesis.speak(u);};next();}
 function restoreHistory(){
   try{const saved=JSON.parse(localStorage.getItem(HISTORY_KEY)||"[]");if(Array.isArray(saved)){state.messages=saved.slice(-80);for(const m of state.messages)addMessage(m.role,m.content,false,m.timestamp||null);}}catch(_){}
   if(!state.messages.length)addMessage("assistant","Olá! Sou o Alfredo. Posso abrir PDFs, extrair textos, localizar trechos de um documento, ajudar você a estudar e ler em voz alta. Escolha uma opção para começar.",false);
