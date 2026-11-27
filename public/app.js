@@ -7,9 +7,14 @@ function addMessage(role,content,save=true){
   const node=document.createElement("article");node.className="message "+role;
   const avatar=document.createElement("div");avatar.className="avatar";avatar.textContent=role==="assistant"?"A":"Você";
   const bubble=document.createElement("div");bubble.className="bubble";bubble.textContent=content;
-  node.append(avatar,bubble);$("messages").append(node);
+  node.append(avatar,bubble);
+  const messages=$("messages");
+  if(role==="user"||!messages.firstElementChild)messages.prepend(node);
+  else if(messages.firstElementChild.classList.contains("user"))messages.insertBefore(node,messages.firstElementChild.nextElementSibling);
+  else messages.prepend(node);
   if(save){state.messages.push({role,content});try{localStorage.setItem(HISTORY_KEY,JSON.stringify(state.messages.slice(-80)));}catch(_){}}
-  node.scrollIntoView({behavior:"smooth",block:"start"});return bubble;
+  if(role==="user")node.scrollIntoView({behavior:"smooth",block:"start"});
+  return bubble;
 }
 function restoreHistory(){
   try{const saved=JSON.parse(localStorage.getItem(HISTORY_KEY)||"[]");if(Array.isArray(saved)){state.messages=saved.slice(-80);for(const m of state.messages)addMessage(m.role,m.content,false);}}catch(_){}
