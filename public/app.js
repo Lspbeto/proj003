@@ -96,7 +96,7 @@ async function sendMessage(text){
     addMessage("assistant",answerFromDocument(content));return;
   }
   addMessage("assistant","Vou pesquisar esse assunto para começarmos...");
-  try{const url="https://pt.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch="+encodeURIComponent(content)+"&gsrlimit=3&prop=extracts&exintro=1&explaintext=1&exchars=1000&format=json&origin=*";const response=await fetch(url);if(!response.ok)throw new Error("falha");const data=await response.json();const pages=Object.values(data.query?.pages||{});if(!pages.length)throw new Error("sem resultados");addMessage("assistant","Encontrei estas referências na Wikipédia:\\n\\n"+pages.map(p=>p.title+"\\n"+(p.extract||"Resumo indisponível.")+"\\nFonte: https://pt.wikipedia.org/wiki/"+encodeURIComponent(p.title.replace(/ /g,"_"))).join("\\n\\n---\\n\\n")+"\\n\\nPode perguntar sobre esses pontos e continuamos a conversa. A pesquisa integrada desta versão consulta a Wikipédia; ainda não interpreta toda a web como uma IA generativa.");}catch(e){window.open("https://html.duckduckgo.com/html/?q="+encodeURIComponent(content),"_blank","noopener");addMessage("assistant","Não consegui trazer resultados diretamente. Abri uma pesquisa externa em outra aba.");}
+  try{const url="https://pt.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch="+encodeURIComponent(content)+"&gsrlimit=3&prop=extracts&exintro=1&explaintext=1&exchars=1000&format=json&origin=*";const response=await fetch(url);if(!response.ok)throw new Error("falha");const data=await response.json();const pages=Object.values(data.query?.pages||{});if(!pages.length)throw new Error("sem resultados");addMessage("assistant","Encontrei estas referências na Wikipédia:\\n\\n"+pages.map(p=>p.title+"\\n"+(p.extract||"Resumo indisponível.")+"\\nFonte: https://pt.wikipedia.org/wiki/"+encodeURIComponent(p.title.replace(/ /g,"_"))).join("\\n\\n---\\n\\n")+"\\n\\nPode perguntar sobre esses pontos e continuamos a conversa. A pesquisa integrada desta versão consulta a Wikipédia; ainda não interpreta toda a web como uma IA generativa.");}catch(e){addMessage("assistant","Não consegui acessar a pesquisa agora. Verifique a conexão com a internet e tente novamente. A pesquisa integrada consulta a Wikipédia em português.");}
 }
 $("composer").addEventListener("submit",e=>{e.preventDefault();sendMessage($("messageInput").value);});
 $("messageInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("composer").requestSubmit();}});
@@ -115,9 +115,9 @@ $("removeDocument").addEventListener("click",()=>{state.documentText="";state.re
 $("pasteTextBtn").addEventListener("click",()=>$("textDialog").showModal());
 $("loadText").addEventListener("click",e=>{const text=$("pastedText").value.trim();if(!text){e.preventDefault();return;}showDocument("Texto colado",text);$("pastedText").value="";});
 $("webSearchBtn").addEventListener("click",()=>{
-  const q=$("messageInput").value.trim();if(!q){addMessage("assistant","Digite o assunto que deseja pesquisar na caixa de mensagem e toque novamente em Pesquisar na web.");return;}
-  window.open("https://html.duckduckgo.com/html/?q="+encodeURIComponent(q),"_blank","noopener");
-  addMessage("assistant","Abri os resultados no DuckDuckGo em outra aba. A pesquisa externa funciona, mas a leitura e o resumo automático dos resultados ainda não estão disponíveis.");
+  const q=$("messageInput").value.trim();
+  if(!q){addMessage("assistant","Digite o assunto na caixa de mensagem e toque em Pesquisar na web.");$("messageInput").focus();return;}
+  sendMessage(q);
 });
 
 // Divide textos longos em blocos para reduzir interrupções comuns na leitura de textos extensos no celular.
