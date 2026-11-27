@@ -143,73 +143,25 @@ restoreHistory();setMode("assistant");
 if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
 
 
-// ===== Escola de HTML do Alfredo: conteúdo local e leitura por toque =====
-const htmlLessons = [
- {title:"1. O que é HTML?",body:"HTML é a linguagem de marcação usada para organizar o conteúdo de páginas da internet. Ela indica ao navegador o que é título, parágrafo, imagem, link, lista e outras partes. HTML não é uma linguagem de programação: é uma linguagem de marcação. O navegador interpreta as etiquetas e monta a página.",code:"<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <title>Minha primeira página</title>\n  </head>\n  <body>\n    Olá, mundo!\n  </body>\n</html>",question:"Para que serve o HTML?",answer:["organizar","conteúdo","página","estrutura","marcação"]},
- {title:"2. Entendendo as etiquetas",body:"As etiquetas, também chamadas de tags, são palavras entre sinais de menor e maior. Muitas têm abertura e fechamento. Por exemplo, <p> inicia um parágrafo e </p> encerra esse parágrafo. O conteúdo fica entre as duas etiquetas. Algumas etiquetas, como <img>, não precisam de fechamento tradicional.",code:"<p>Este é um parágrafo.</p>\n<h1>Este é um título principal</h1>",question:"Qual é a função da etiqueta <p>?",answer:["parágrafo","texto"]},
- {title:"3. A estrutura básica",body:"Uma página HTML começa com <!doctype html>, que informa ao navegador que usamos HTML moderno. A etiqueta <html> envolve a página. Dentro dela, <head> guarda informações sobre a página, e <body> contém o conteúdo que aparece para a pessoa que visita o site.",code:"<!doctype html>\n<html lang=\"pt-BR\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Minha página</title>\n</head>\n<body>\n  <h1>Bem-vindo!</h1>\n  <p>Estou aprendendo HTML.</p>\n</body>\n</html>",question:"Em qual parte colocamos o conteúdo visível da página?",answer:["body","corpo"]},
- {title:"4. Títulos e parágrafos",body:"Os títulos organizam o conteúdo em níveis. <h1> representa o título principal; <h2> e os demais níveis representam subtítulos. <p> cria parágrafos. Use os níveis na ordem lógica para facilitar a leitura e a acessibilidade.",code:"<h1>Minha empresa</h1>\n<h2>Quem somos</h2>\n<p>Conheça nosso trabalho.</p>",question:"Qual etiqueta representa o título principal?",answer:["h1"]},
- {title:"5. Links e imagens",body:"A etiqueta <a> cria um link. O atributo href informa o endereço de destino. A etiqueta <img> mostra uma imagem. O atributo src indica o arquivo da imagem e alt oferece uma descrição textual, importante para acessibilidade.",code:"<a href=\"https://example.com\">Visitar site</a>\n<img src=\"foto.jpg\" alt=\"Uma paisagem verde\">",question:"Qual atributo informa o destino de um link?",answer:["href"]},
- {title:"6. Listas e formulários",body:"As listas podem ser ordenadas com <ol> ou não ordenadas com <ul>. Cada item usa <li>. Formulários coletam informações: <form> agrupa os campos, <label> identifica um campo e <input> permite digitar ou selecionar dados.",code:"<ul>\n  <li>Maçã</li>\n  <li>Banana</li>\n</ul>\n<label for=\"nome\">Seu nome</label>\n<input id=\"nome\" type=\"text\">",question:"Qual etiqueta representa cada item de uma lista?",answer:["li"]}
-];
-let htmlLessonIndex=0;
-function addHtmlSchool(){
- const toolsBox=document.querySelector(".tools"); if(!toolsBox||$("htmlSchoolBtn"))return;
- const btn=document.createElement("button");btn.type="button";btn.id="htmlSchoolBtn";btn.className="tool-button";btn.textContent="💻 Aprender HTML";toolsBox.append(btn);
- const panel=document.createElement("section");panel.id="htmlSchool";panel.className="html-school hidden";
- panel.innerHTML='<div class="school-head"><div><strong>🎓 Escola de HTML</strong><small>Aprenda passo a passo com o Alfredo</small></div><button type="button" id="closeHtmlSchool" class="icon-button" aria-label="Fechar aulas">✕</button></div><div class="school-progress" id="htmlProgress"></div><h2 id="htmlLessonTitle"></h2><div id="htmlLessonBody" class="html-lesson-body"></div><pre class="html-code" id="htmlLessonCode"></pre><div class="school-actions"><button type="button" class="primary small" id="readHtmlLesson">🔊 Ouvir esta aula</button><button type="button" class="tool-button small" id="explainHtmlLesson">💡 Explicar de outro jeito</button></div><div class="html-quiz"><strong id="htmlQuestion"></strong><input id="htmlAnswer" type="text" placeholder="Digite sua resposta"><button type="button" class="primary small" id="checkHtmlAnswer">Conferir resposta</button><p id="htmlFeedback" aria-live="polite"></p></div><div class="school-actions"><button type="button" class="tool-button small" id="prevHtmlLesson">← Aula anterior</button><button type="button" class="primary small" id="nextHtmlLesson">Próxima aula →</button></div>';
- document.querySelector("main").insertBefore(panel,document.querySelector(".chat-toolbar"));
- $("htmlSchoolBtn").addEventListener("click",()=>{panel.classList.remove("hidden");setMode("teacher");renderHtmlLesson();panel.scrollIntoView({behavior:"smooth",block:"start"});});
- $("closeHtmlSchool").addEventListener("click",()=>panel.classList.add("hidden"));
- $("prevHtmlLesson").addEventListener("click",()=>{htmlLessonIndex=Math.max(0,htmlLessonIndex-1);renderHtmlLesson();});
- $("nextHtmlLesson").addEventListener("click",()=>{htmlLessonIndex=Math.min(htmlLessons.length-1,htmlLessonIndex+1);renderHtmlLesson();});
- $("readHtmlLesson").addEventListener("click",()=>{const l=htmlLessons[htmlLessonIndex];startReadingFrom(l.title+". "+l.body+". Exemplo de código: "+l.code);});
- $("explainHtmlLesson").addEventListener("click",()=>{const l=htmlLessons[htmlLessonIndex];addMessage("assistant","Vamos simplificar: "+simpleHtmlExplanation(htmlLessonIndex));});
- $("checkHtmlAnswer").addEventListener("click",()=>{const answer=normalize($("htmlAnswer").value);const l=htmlLessons[htmlLessonIndex];const ok=l.answer.some(w=>answer.includes(normalize(w)));$("htmlFeedback").textContent=ok?"Muito bem! Você acertou. Explique agora com suas palavras por que essa resposta está correta.":"Ainda não. Leia a explicação e tente novamente. Dica: procure a palavra principal da pergunta.";if(ok)addMessage("assistant","Muito bem! Sua resposta está no caminho certo. Quer avançar para a próxima aula?");});
- renderHtmlLesson();
-}
-function simpleHtmlExplanation(i){
- return [
- "Imagine que uma página é um documento. O HTML organiza as partes desse documento para o navegador saber o que mostrar e como cada parte se relaciona.",
- "Pense nas etiquetas como marcações em um texto: uma marca onde o parágrafo começa e outra onde termina. Assim o navegador reconhece cada elemento.",
- "O head é como a ficha de identificação da página; o body é o espaço onde fica o conteúdo que aparece na tela.",
- "Os títulos são como capítulos e subtítulos de um livro. Eles criam uma hierarquia para organizar o assunto.",
- "Um link é uma porta para outro endereço. O href informa para qual endereço essa porta leva. A imagem usa src para indicar o arquivo.",
- "Uma lista organiza itens. Um formulário funciona como uma ficha que permite à pessoa preencher informações."
- ][i];
-}
-function renderHtmlLesson(){
- const l=htmlLessons[htmlLessonIndex];if(!$("htmlLessonTitle"))return;
- $("htmlProgress").textContent="Aula "+(htmlLessonIndex+1)+" de "+htmlLessons.length;
- $("htmlLessonTitle").textContent=l.title;$("htmlLessonBody").textContent=l.body;$("htmlLessonCode").textContent=l.code;
- $("htmlQuestion").textContent="Vamos conferir: "+l.question;$("htmlAnswer").value="";$("htmlFeedback").textContent="";
- $("prevHtmlLesson").disabled=htmlLessonIndex===0;$("nextHtmlLesson").disabled=htmlLessonIndex===htmlLessons.length-1;
-}
+
+// ===== Leitura iniciada ao tocar em qualquer parágrafo =====
 function startReadingFrom(text){
  if(!("speechSynthesis"in window)){addMessage("assistant","A leitura em voz alta não está disponível neste navegador.");return;}
  speechSynthesis.cancel();speechQueue=String(text).match(/[\s\S]{1,1800}(?:\s|$)/g)||[String(text)];speechIndex=0;speakNext();
 }
-function makeReaderSelectable(name,text){
+function makeReaderSelectable(){
  const oldShow=showDocument;
  showDocument=function(docName,docText){
    oldShow(docName,docText);
    const target=$("readerText");target.innerHTML="";
    let offset=0;
-   const paragraphs=String(docText).split(/\n+/);
-   paragraphs.forEach(raw=>{
+   String(docText).split(/\n+/).forEach(raw=>{
      const value=raw.trim();if(!value){offset+=raw.length+1;return;}
      const p=document.createElement("p");p.className="reader-paragraph";p.textContent=value;p.dataset.start=String(offset+raw.indexOf(value));
      p.title="Toque aqui para começar a leitura deste ponto";
      p.addEventListener("click",()=>{const start=Number(p.dataset.start);startReadingFrom(String(state.readingText).slice(start));document.querySelectorAll(".reader-paragraph").forEach(x=>x.classList.remove("reading-start"));p.classList.add("reading-start");});
-     p.addEventListener("dblclick",()=>{const selected=window.getSelection()?.toString().trim();if(selected)addMessage("assistant","Explicação do trecho selecionado: "+explainHtmlSelection(selected));});
      target.append(p);offset+=raw.length+1;
    });
  };
 }
-function explainHtmlSelection(word){
- const w=normalize(word);
- const defs={"html":"Linguagem de marcação que organiza o conteúdo de páginas da web.","head":"Parte que guarda informações e configurações da página, normalmente não exibidas como conteúdo principal.","body":"Parte que contém o conteúdo visível da página.","h1":"Etiqueta usada para o título principal de uma página ou seção.","p":"Etiqueta usada para criar um parágrafo.","div":"Elemento genérico usado para agrupar outros elementos.","href":"Atributo que indica o endereço de destino de um link.","src":"Atributo que indica a origem de um arquivo, como uma imagem.","alt":"Texto alternativo que descreve uma imagem."};
- for(const [key,value] of Object.entries(defs))if(w.includes(key))return value;
- return "Este trecho faz parte do conteúdo estudado. No HTML, observe as etiquetas, os atributos e o conteúdo entre as etiquetas. Posso explicar melhor se você me disser qual palavra ou linha ficou difícil.";
-}
-makeReaderSelectable();addHtmlSchool();
+makeReaderSelectable();
