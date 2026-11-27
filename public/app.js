@@ -3,24 +3,37 @@ const state = { mode:"assistant", documentText:"", readingText:"", messages:[], 
 const HISTORY_KEY="alfredo-chat-v2";
 if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
-function addMessage(role,content,save=true){
+function addMessage(role,content,save=true,timestamp=new Date().toISOString()){
   const node=document.createElement("article");node.className="message "+role;
   const avatar=document.createElement("div");avatar.className="avatar";avatar.textContent=role==="assistant"?"A":"Você";
   const bubble=document.createElement("div");bubble.className="bubble";bubble.textContent=content;
-  node.append(avatar,bubble);
+  const details=document.createElement("time");details.className="message-time";
+  if(timestamp){const date=new Date(timestamp);details.dateTime=date.toISOString();details.textContent=date.toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});}
+  else details.textContent="Data/hora não registrada";
+  const body=document.createElement("div");body.className="message-body";body.append(bubble,details);
+  node.append(avatar,body);
   const messages=$("messages");
   if(role==="user"||!messages.firstElementChild)messages.prepend(node);
   else if(messages.firstElementChild.classList.contains("user"))messages.insertBefore(node,messages.firstElementChild.nextElementSibling);
   else messages.prepend(node);
-  if(save){state.messages.push({role,content});try{localStorage.setItem(HISTORY_KEY,JSON.stringify(state.messages.slice(-80)));}catch(_){}}
+  if(save){state.messages.push({role,content,timestamp});try{localStorage.setItem(HISTORY_KEY,JSON.stringify(state.messages.slice(-80)));}catch(_){}}
   // Mantem a pergunta mais recente e a resposta no topo da area rolavel.
   requestAnimationFrame(()=>messages.scrollTo({top:0,behavior:"smooth"}));
   return bubble;
 }
 function restoreHistory(){
-  try{const saved=JSON.parse(localStorage.getItem(HISTORY_KEY)||"[]");if(Array.isArray(saved)){state.messages=saved.slice(-80);for(const m of state.messages)addMessage(m.role,m.content,false);}}catch(_){}
-  if(!state.messages.length)addMessage("assistant","Olá! Sou o Alfredo. Posso abrir PDFs, extrair textos, localizar trechos de um documento, ajudar você a estudar e ler em voz alta. Escolha uma opção para começar.");
+  try{const saved=JSON.parse(localStorage.getItem(HISTORY_KEY)||"[]");if(Array.isArray(saved)){state.messages=saved.slice(-80);for(const m of state.messages)addMessage(m.role,m.content,false,m.timestamp||null);}}catch(_){}
+  if(!state.messages.length)addMessage("assistant","Olá! Sou o Alfredo. Posso abrir PDFs, extrair textos, localizar trechos de um documento, ajudar você a estudar e ler em voz alta. Escolha uma opção para começar.",false);
 }
+function clearHistory(){
+  if(!window.confirm("Apagar todas as conversas e o histórico salvo neste aparelho?"))return;
+  state.messages=[];
+  try{localStorage.removeItem(HISTORY_KEY);}catch(_){}
+  $("messages").innerHTML="";
+  addMessage("assistant","Histórico apagado. Vamos começar uma nova conversa.",false);
+}
+$("clearHistoryBtn").addEventListener("click",clearHistory);
+
 function setMode(mode){
   state.mode=mode;document.querySelectorAll(".mode").forEach(b=>b.classList.toggle("active",b.dataset.mode===mode));
   $("hint").textContent=({assistant:"Conversa: pergunte sobre o documento aberto ou pesquise um assunto na web.",teacher:"Professor: abra um PDF ou cole um texto. Peça um resumo, explicação ou exercício sobre o material.",reading:"Leitura: abra um PDF ou cole um texto. Alfredo lê o conteúdo em voz alta."})[mode];
