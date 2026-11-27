@@ -1,9 +1,10 @@
 {
-  "name": "Alfredo — Assistente pessoal",
-  "short_name": "Alfredo",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#f3f6fb",
-  "theme_color": "#15233b",
-  "description": "Assistente pessoal, professor e leitor de documentos."
+  "name":"Alfredo — Assistente pessoal",
+  "short_name":"Alfredo",
+  "start_url":"./",
+  "scope":"./",
+  "display":"standalone",
+  "background_color":"#f3f6fb",
+  "theme_color":"#15233b",
+  "description":"Assistente pessoal, professor e leitor de documentos."
 }
