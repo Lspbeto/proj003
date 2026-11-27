@@ -1,31 +1,15 @@
-# Publicar o Alfredo na internet
+# Publicação do Alfredo pelo próprio GitHub
 
-Este repositório já contém um arquivo `render.yaml` para facilitar a criação de um serviço web no Render.
+Esta versão usa GitHub Pages e GitHub Actions. Não depende de Render, banco de dados ou servidor Node para entregar a interface.
 
-## Atenção antes de publicar
+1. No repositório, abra **Settings → Pages**.
+2. Em **Build and deployment → Source**, selecione **GitHub Actions**.
+3. Salve a configuração.
+4. Acesse a aba **Actions** e acompanhe o workflow “Publicar Alfredo no GitHub Pages”.
+5. Quando terminar com sucesso, abra:
 
-O Render pode hospedar a interface e o servidor web, mas **não executa automaticamente o Ollama nem instala o modelo de IA**. Portanto, com a configuração atual, a página poderá abrir na internet, mas a conversa com IA ficará indisponível até conectarmos um provedor de IA compatível ou um servidor privado seguro.
+https://lspbeto.github.io/proj003/
 
-O plano gratuito do Render também pode suspender o serviço após períodos sem uso e tem limites de recursos. Não é uma garantia de disponibilidade permanente.
+A primeira publicação pode levar alguns minutos. O endereço é público porque o repositório é público.
 
-## Criar o serviço
-
-1. Entre em https://render.com/ e conecte sua conta GitHub.
-2. Escolha criar um serviço do tipo Blueprint.
-3. Selecione o repositório `Lspbeto/proj003`.
-4. O Render identificará o arquivo `render.yaml`.
-5. Confira as configurações antes de confirmar a criação.
-
-O serviço usa Node, executa `npm install` e inicia com `npm start`.
-
-## Variáveis
-
-O arquivo `.env.example` é apenas um modelo para execução local. Não coloque senhas, chaves privadas ou tokens no GitHub. Segredos devem ser cadastrados no painel do serviço de hospedagem.
-
-## Como ficará o acesso pelo celular
-
-Depois que o serviço estiver publicado, o Render fornecerá um endereço HTTPS. Esse endereço poderá ser aberto no Android ou iPhone pelo navegador. A interface é responsiva e possui manifesto PWA, permitindo adicionar um atalho à tela inicial.
-
-## Próxima etapa técnica necessária para IA online
-
-Precisamos escolher e integrar um serviço de IA com camada gratuita ou conectar um servidor próprio protegido. Não se deve expor a API do Ollama diretamente à internet. Antes da integração, também será necessário limitar requisições e proteger o endpoint contra uso indevido.
+Observação: o GitHub Pages publica somente HTML, CSS e JavaScript. Não executa a API de IA do servidor nem armazena dados em banco. Nesta versão, PDF, leitura de voz, pesquisa externa e histórico local funcionam no navegador. A IA conversacional ainda precisa de uma solução que rode no próprio navegador ou de um serviço externo.
