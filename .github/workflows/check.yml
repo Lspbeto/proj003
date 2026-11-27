@@ -1,0 +1,24 @@
+name: Verificar Alfredo
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Instalar dependências
+        run: npm install
+      - name: Verificar sintaxe do servidor
+        run: node --check server.js
+      - name: Verificar sintaxe do navegador
+        run: node --check public/app.js
