@@ -1,0 +1,9 @@
+{
+  "name": "alfredo-assistente",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Assistente pessoal e professor multiplataforma Alfredo",
+  "scripts": { "start": "node server.js", "dev": "node --watch server.js" },
+  "engines": { "node": ">=20" },
+  "dependencies": { "express": "^4.21.2" }
+}
