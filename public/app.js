@@ -1,5 +1,5 @@
 const $ = id => document.getElementById(id);
-const state = { mode:"assistant", documentText:"", readingText:"", messages:[], quiz:0 };
+const state = { mode:"assistant", documentText:"", readingText:"", messages:[], quiz:0, professorQuestion:null };
 const HISTORY_KEY="alfredo-chat-v2";
 if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
@@ -67,10 +67,17 @@ function answerFromDocument(question){
   if(!hits.length)return "Não encontrei no texto carregado um trecho claramente relacionado a essa pergunta. Tente usar outras palavras ou termos que apareçam no documento. Também posso mostrar um resumo inicial.";
   return "Encontrei estes trechos no documento que podem ajudar. Confira o contexto original:\n\n"+hits.map((h,i)=>"Trecho "+(i+1)+":\n"+h.chunk.trim()).join("\n\n---\n\n");
 }
-function sendMessage(text){
+async function sendMessage(text){
   const content=text.trim();if(!content)return;
   addMessage("user",content);$("messageInput").value="";
   const lower=normalize(content);
+  if(state.mode==="teacher"){
+    if(!state.documentText){addMessage("assistant","No modo Professor, abra um PDF ou cole um texto. Depois posso resumir, explicar e fazer perguntas.");return;}
+    if(state.professorQuestion){const expected=normalize(state.professorQuestion);const words=normalize(content).split(/\\s+/).filter(w=>w.length>3);const hits=words.filter(w=>expected.includes(w));state.professorQuestion=null;addMessage("assistant",hits.length>2?"Boa resposta! Você identificou ideias do texto. Tente explicar também por que são importantes. Escreva próxima pergunta para continuar.":"Vamos melhorar sua resposta. Volte ao trecho e explique a ideia central com suas palavras. Você pode escrever explicar para rever o conteúdo.");return;}
+    if(/resumo|resumir|resuma|síntese/i.test(content)){addMessage("assistant","Resumo do material:\\n\\n"+summarizeDocument());return;}
+    if(/pergunta|perguntas|quiz|exercício|próxima/i.test(content)){const ps=state.documentText.split(/\\n+/).map(x=>x.trim()).filter(x=>x.length>90);if(!ps.length){addMessage("assistant","Não encontrei texto suficiente para criar uma pergunta.");return;}const part=ps[state.quiz++%ps.length];state.professorQuestion=part;addMessage("assistant","Pergunta: qual é a ideia mais importante deste trecho? Explique com suas palavras.\\n\\nTrecho para estudar:\\n"+part.slice(0,1200));return;}
+    const hits=findRelevant(content);const source=hits.length?hits.map(x=>x.chunk.trim()).join("\\n\\n"):summarizeDocument();addMessage("assistant","Vamos estudar por partes.\\n\\nIdeia principal:\\n"+source.slice(0,1800)+"\\n\\nExplicação simples: observe os conceitos centrais e como eles se relacionam. Se uma palavra ou parte ficou difícil, pergunte sobre ela.\\n\\nPara praticar, escreva: próxima pergunta.");return;
+  }
   if(state.mode==="reading"){
     if(state.readingText){addMessage("assistant","Você está no modo Leitura. Use “Ler em voz alta” para ouvir o texto. Para localizar informações, mude para Conversar.");}
     else addMessage("assistant","Abra um PDF ou cole um texto para começar a leitura.");
@@ -85,7 +92,8 @@ function sendMessage(text){
     }
     addMessage("assistant",answerFromDocument(content));return;
   }
-  addMessage("assistant","Para responder com base em um material, primeiro abra um PDF ou cole o texto. Sem documento, posso abrir uma pesquisa externa: escreva o assunto na caixa e toque em “Pesquisar na web”. A conversa com IA generativa ainda não está conectada nesta versão estática.");
+  addMessage("assistant","Vou pesquisar esse assunto para começarmos...");
+  try{const url="https://pt.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch="+encodeURIComponent(content)+"&gsrlimit=3&prop=extracts&exintro=1&explaintext=1&exchars=1000&format=json&origin=*";const response=await fetch(url);if(!response.ok)throw new Error("falha");const data=await response.json();const pages=Object.values(data.query?.pages||{});if(!pages.length)throw new Error("sem resultados");addMessage("assistant","Encontrei estas referências na Wikipédia:\\n\\n"+pages.map(p=>p.title+"\\n"+(p.extract||"Resumo indisponível.")+"\\nFonte: https://pt.wikipedia.org/wiki/"+encodeURIComponent(p.title.replace(/ /g,"_"))).join("\\n\\n---\\n\\n")+"\\n\\nPode perguntar sobre esses pontos e continuamos a conversa. A pesquisa integrada desta versão consulta a Wikipédia; ainda não interpreta toda a web como uma IA generativa.");}catch(e){window.open("https://html.duckduckgo.com/html/?q="+encodeURIComponent(content),"_blank","noopener");addMessage("assistant","Não consegui trazer resultados diretamente. Abri uma pesquisa externa em outra aba.");}
 }
 $("composer").addEventListener("submit",e=>{e.preventDefault();sendMessage($("messageInput").value);});
 $("messageInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("composer").requestSubmit();}});
