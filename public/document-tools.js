@@ -29,4 +29,46 @@
  $("pdfToExcelBtn").addEventListener("click",()=>withBusy("Extraindo conteúdo para Excel",async()=>{const f=file("pdfToExcel"),X=need("XLSX"),pdf=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise,rows=[];for(let i=1;i<=pdf.numPages;i++){const p=await pdf.getPage(i),c=await p.getTextContent();const line=c.items.map(x=>x.str).join(" ").trim();rows.push(["Página "+i,line]);}const wb=X.utils.book_new(),ws=X.utils.aoa_to_sheet([["Página","Texto extraído"],...rows]);X.utils.book_append_sheet(wb,ws,"Texto PDF");X.writeFile(wb,safeName(f.name)+".xlsx");say("Excel criado. Atenção: a extração é textual; tabelas complexas podem precisar de ajustes.");}));
  $("pdfToWordBtn").addEventListener("click",()=>withBusy("Convertendo PDF para Word",async()=>{const f=file("pdfToWord"),pdf=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise,D=need("docx"),paras=[];for(let i=1;i<=pdf.numPages;i++){const p=await pdf.getPage(i),c=await p.getTextContent();paras.push(new D.Paragraph({text:"Página "+i,heading:D.HeadingLevel.HEADING_2}));paras.push(new D.Paragraph({text:c.items.map(x=>x.str).join(" ")}));}const doc=new D.Document({sections:[{children:paras}]});const blob=await D.Packer.toBlob(doc);download(blob,safeName(f.name)+".docx");say("Documento Word gerado. A disposição visual original do PDF pode não ser preservada.");}));
  $("optimizePdfBtn").addEventListener("click",()=>withBusy("Regravando PDF",async()=>{const f=file("optimizePdf"),{PDFDocument}=need("PDFLib"),pdf=await PDFDocument.load(await f.arrayBuffer()),bytes=await pdf.save({useObjectStreams:true});download(new Blob([bytes],{type:"application/pdf"}),safeName(f.name)+"-otimizado.pdf");say("PDF regravado. Tamanho original: "+Math.round(f.size/1024)+" KB; novo: "+Math.round(bytes.length/1024)+" KB. A redução depende do conteúdo.");}));
+
+ // Editor visual: mantém o PDF original e grava desenhos/textos como camadas sobre cada página.
+ const visualDialog=$("visualPdfDialog"), baseCanvas=$("pdfBaseCanvas"), overlayCanvas=$("pdfOverlayCanvas");
+ let visualFile=null, visualPdf=null, visualPage=1, visualScale=1, visualLayers=new Map(), drawing=false, lastPoint=null;
+ const vctx=overlayCanvas.getContext("2d");
+ const visualStatus=(m,bad=false)=>{const el=$("pdfEditorStatus");el.textContent=m;el.style.color=bad?"#a33b3b":"#315d91";};
+ function storeVisualLayer(){if(visualPdf&&overlayCanvas.width&&overlayCanvas.height){const c=document.createElement("canvas");c.width=overlayCanvas.width;c.height=overlayCanvas.height;c.getContext("2d").drawImage(overlayCanvas,0,0);visualLayers.set(visualPage,c);}}
+ async function showVisualPage(n){
+  if(!visualPdf)return;storeVisualLayer();visualPage=Math.max(1,Math.min(n,visualPdf.numPages));
+  const page=await visualPdf.getPage(visualPage),viewport=page.getViewport({scale:1});
+  const maxW=Math.min(window.innerWidth-44,820),scale=Math.min(1.7,maxW/viewport.width);visualScale=scale;
+  const view=page.getViewport({scale});const dpr=Math.min(window.devicePixelRatio||1,2);
+  for(const c of [baseCanvas,overlayCanvas]){c.width=Math.round(view.width*dpr);c.height=Math.round(view.height*dpr);c.style.width=view.width+"px";c.style.height=view.height+"px";}
+  await page.render({canvasContext:baseCanvas.getContext("2d"),viewport:view, transform:dpr===1?null:[dpr,0,0,dpr,0,0]}).promise;
+  vctx.setTransform(dpr,0,0,dpr,0,0);vctx.clearRect(0,0,view.width,view.height);
+  const old=visualLayers.get(visualPage);if(old){vctx.drawImage(old,0,0,view.width,view.height);}
+  $("pdfEditorPageLabel").textContent="Página "+visualPage+" de "+visualPdf.numPages;
+  $("pdfPrevPage").disabled=visualPage<=1;$("pdfNextPage").disabled=visualPage>=visualPdf.numPages;
+ }
+ $("startVisualEditor").addEventListener("click",async()=>{try{visualFile=file("visualPdfFile");if(!window.pdfjsLib)throw new Error("Leitor PDF não carregou. Verifique a internet.");visualStatus("Abrindo PDF…");visualPdf=await pdfjsLib.getDocument({data:await visualFile.arrayBuffer()}).promise;visualLayers=new Map();visualPage=1;visualDialog.showModal();await showVisualPage(1);visualStatus("PDF aberto. Escolha uma ferramenta e faça suas marcações.");}catch(e){visualStatus(e.message,true);}});
+ $("closeVisualEditor").addEventListener("click",()=>{storeVisualLayer();visualDialog.close();});
+ $("pdfPrevPage").addEventListener("click",()=>showVisualPage(visualPage-1).catch(e=>visualStatus(e.message,true)));
+ $("pdfNextPage").addEventListener("click",()=>showVisualPage(visualPage+1).catch(e=>visualStatus(e.message,true)));
+ function canvasPoint(e){const r=overlayCanvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
+ overlayCanvas.addEventListener("pointerdown",e=>{
+  if(!visualPdf)return;const mode=$("pdfToolMode").value,p=canvasPoint(e),color=$("pdfToolColor").value,size=Number($("pdfToolSize").value),dpr=overlayCanvas.width/overlayCanvas.clientWidth;
+  drawing=true;lastPoint=p;overlayCanvas.setPointerCapture(e.pointerId);
+  if(mode==="text"){const value=$("pdfToolText").value.trim();if(!value){visualStatus("Digite o texto no campo Texto antes de tocar na página.",true);drawing=false;return;}vctx.save();vctx.setTransform(dpr,0,0,dpr,0,0);vctx.globalCompositeOperation="source-over";vctx.fillStyle=color;vctx.font=Math.max(12,size*3)+"px Arial";const lines=value.split("\\n");lines.forEach((line,i)=>vctx.fillText(line,p.x,p.y+i*Math.max(14,size*3+3)));vctx.restore();storeVisualLayer();drawing=false;return;}
+  vctx.save();vctx.setTransform(dpr,0,0,dpr,0,0);vctx.lineCap="round";vctx.lineJoin="round";vctx.lineWidth=size;vctx.strokeStyle=color;vctx.globalCompositeOperation=mode==="eraser"?"destination-out":"source-over";vctx.globalAlpha=mode==="highlight"?0.28:1;vctx.beginPath();vctx.moveTo(p.x,p.y);vctx.lineTo(p.x+0.1,p.y+0.1);vctx.stroke();vctx.restore();
+ });
+ overlayCanvas.addEventListener("pointermove",e=>{
+  if(!drawing)return;const p=canvasPoint(e),mode=$("pdfToolMode").value,dpr=overlayCanvas.width/overlayCanvas.clientWidth,size=Number($("pdfToolSize").value);
+  vctx.save();vctx.setTransform(dpr,0,0,dpr,0,0);vctx.lineCap="round";vctx.lineJoin="round";vctx.lineWidth=mode==="eraser"?size*3:size;vctx.strokeStyle=$("pdfToolColor").value;vctx.globalCompositeOperation=mode==="eraser"?"destination-out":"source-over";vctx.globalAlpha=mode==="highlight"?0.28:1;vctx.beginPath();vctx.moveTo(lastPoint.x,lastPoint.y);vctx.lineTo(p.x,p.y);vctx.stroke();vctx.restore();lastPoint=p;
+ });
+ const finishDraw=()=>{if(drawing){drawing=false;storeVisualLayer();}};overlayCanvas.addEventListener("pointerup",finishDraw);overlayCanvas.addEventListener("pointercancel",finishDraw);overlayCanvas.addEventListener("lostpointercapture",finishDraw);
+ $("pdfClearMarks").addEventListener("click",()=>{vctx.clearRect(0,0,overlayCanvas.width,overlayCanvas.height);visualLayers.delete(visualPage);visualStatus("Marcações da página atual removidas.");});
+ $("pdfSaveMarked").addEventListener("click",()=>withBusy("Aplicando marcações ao PDF original",async()=>{
+  if(!visualFile||!visualPdf)throw new Error("Abra um PDF no editor primeiro.");storeVisualLayer();const {PDFDocument}=need("PDFLib"),doc=await PDFDocument.load(await visualFile.arrayBuffer());
+  for(const [pageNo,canvas] of visualLayers){const ctx=canvas.getContext("2d"),pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data;let visible=false;for(let i=3;i<pixels.length;i+=4){if(pixels[i]>0){visible=true;break;}}if(!visible)continue;const png=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));if(!png)continue;const image=await doc.embedPng(await png.arrayBuffer());const page=doc.getPage(pageNo-1),size=page.getSize();page.drawImage(image,{x:0,y:0,width:size.width,height:size.height});}
+  const bytes=await doc.save();download(new Blob([bytes],{type:"application/pdf"}),safeName(visualFile.name)+"-editado.pdf");visualStatus("PDF salvo com as marcações. O conteúdo original foi mantido e as alterações foram aplicadas por cima.");
+ }));
+
 })();
