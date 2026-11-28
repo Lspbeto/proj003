@@ -25,7 +25,7 @@
   <div class="tools-title"><div><h2>Ferramentas de documentos</h2><p>Edite, digitalize, organize e converta arquivos sem enviar seus documentos para um servidor.</p></div><button type="button" class="icon-button" id="closeDocumentTools" aria-label="Fechar">✕</button></div>
   <div class="tool-grid">
    <div class="tool-group-heading"><strong>✏️ EDITAR E ORGANIZAR PDF</strong><span>As opções de PDF estão reunidas aqui: separar páginas, juntar arquivos e regravar o documento.</span></div>
-   <section class="tool-section pdf-tool"><h3>1. Dividir PDF por páginas</h3><textarea id="documentEditor" rows="8" placeholder="Digite ou cole um texto aqui. O rascunho fica salvo neste navegador."></textarea><div class="tool-actions"><button class="primary small" id="editorUse">Enviar para leitura</button><button class="tool-button small" id="editorTxt">Baixar TXT</button><button class="tool-button small" id="editorPdf">Salvar como PDF</button></div></section>
+   <section class="tool-section pdf-tool"><h3>1. Editar PDF (texto)</h3><p>Escolha um PDF para extrair o texto. Edite abaixo e salve um novo PDF. A formatação e as imagens originais podem não ser mantidas.</p><input type="file" id="editPdfFile" accept=".pdf,application/pdf"><button class="primary small" id="loadPdfToEditor">Abrir PDF para editar</button><label for="documentEditor">Texto extraído — faça suas alterações aqui</label><textarea id="documentEditor" rows="8" placeholder="Abra um PDF acima ou digite/cole um texto aqui."></textarea><div class="tool-actions"><button class="primary small" id="editorPdf">Salvar PDF editado</button><button class="tool-button small" id="editorUse">Enviar para leitura</button><button class="tool-button small" id="editorTxt">Baixar TXT</button></div></section>
    <section class="tool-section pdf-tool"><h3>1. Dividir PDF por páginas</h3><input type="file" id="splitPdfFile" accept=".pdf,application/pdf"><div class="inline-fields"><label>Página inicial <input type="number" id="splitStart" min="1" value="1"></label><label>Página final <input type="number" id="splitEnd" min="1" value="1"></label></div><button class="primary small" id="splitPdfBtn">Criar PDF das páginas</button></section>
    <section class="tool-section pdf-tool"><h3>2. Juntar (mesclar) PDFs</h3><input type="file" id="mergePdfFiles" accept=".pdf,application/pdf" multiple><button class="primary small" id="mergePdfBtn">Unir PDFs selecionados</button></section>
    <div class="tool-group-heading"><strong>📷 DIGITALIZAR E COMPRIMIR</strong><span>Use a câmera, reconheça texto e reduza o tamanho de imagens.</span></div>
@@ -42,6 +42,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="./app.js?v=20261128-local"></script>
-<script src="./document-tools.js?v=20261128-local"></script>
+<script src="./app.js?v=20261128-fix2"></script>
+<script src="./document-tools.js?v=20261128-fix2"></script>
 </body></html>
