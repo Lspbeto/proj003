@@ -47,3 +47,12 @@ As conversas e rascunhos usam localStorage do navegador. Isso é suficiente para
 ## Backend antigo
 
 Os arquivos `server.js` e `package.json` permanecem no repositório para possível adaptação futura. Eles não são necessários para o site estático no GitHub Pages. Não é preciso contratar Render ou configurar MongoDB para usar as ferramentas locais desta versão.
+
+## Compatibilidade entre dispositivos
+
+O site é responsivo e funciona nos navegadores atuais de Windows, Android e iOS:
+- Windows: Chrome, Edge e Firefox atualizados.
+- Android: Chrome atualizado; escolha câmera ou arquivos no seletor de imagens.
+- iPhone/iPad: Safari atualizado; para instalar, use Compartilhar → Adicionar à Tela de Início. Downloads podem abrir uma prévia; use Compartilhar → Salvar em Arquivos.
+
+Recursos como microfone, câmera e reconhecimento de fala dependem das permissões e APIs disponíveis no navegador. No iOS, o botão de voz orienta a usar o Ditado do teclado quando o reconhecimento de fala do site não estiver disponível. Leitura em voz alta usa a voz do sistema.
