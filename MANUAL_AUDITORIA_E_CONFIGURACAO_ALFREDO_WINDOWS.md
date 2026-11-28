@@ -902,3 +902,40 @@ O Alfredo atual já tem uma interface funcional para leitura de PDFs digitais, l
 O repositório também contém um servidor Node/Express preparado para conversar com Ollama local, mas a interface ainda não está ligada a esse servidor. Não existe banco de dados conectado e o histórico ainda não sincroniza entre dispositivos.
 
 Este documento registra a estrutura encontrada e orienta a instalação, os testes, a publicação e as alternativas de hospedagem. Ele não afirma que recursos ainda não implementados estejam funcionando. A próxima etapa técnica mais importante é ligar a interface a um backend protegido e escolher a solução de IA e, se desejado, o banco de dados.
+
+
+---
+
+# ADENDO — CONDIÇÕES DOS PLANOS GRATUITOS CONFERIDAS NAS PÁGINAS OFICIAIS
+
+Este adendo complementa a seção de hospedagem. Os provedores alteram planos e limites; confirme novamente antes de criar o serviço.
+
+## Render
+
+A documentação oficial informa que serviços web gratuitos podem ser publicados sem pagamento inicial, mas entram em suspensão após 15 minutos sem tráfego e levam algum tempo para voltar quando recebem nova requisição. O plano gratuito de Web Service informa 512 MB de RAM e 0,1 CPU. Isso é adequado para testes pequenos, não para executar um modelo de linguagem pesado no mesmo serviço.
+
+- Guia oficial: https://render.com/docs/your-first-deploy
+- Planos: https://render.com/pricing
+- Limitações: https://render.com/docs/compute-plans
+
+## MongoDB Atlas Free
+
+A documentação oficial chama a camada gratuita de **Free cluster** (antes chamada M0). Ela oferece até 0,5 GB de armazenamento de dados e tem limites de operações e transferência. O Atlas pode pausar automaticamente clusters gratuitos depois de 30 dias sem conexões. É indicado para aprendizado e protótipos pequenos, não deve ser tratado como armazenamento ilimitado ou substituto de backups.
+
+- Criar cluster gratuito: https://www.mongodb.com/docs/atlas/tutorial/deploy-free-tier-cluster/
+- Limites oficiais: https://www.mongodb.com/docs/atlas/reference/free-shared-limitations/
+
+## Supabase Free
+
+A página de preços consultada informa plano Free de US$ 0, com 500 MB de banco de dados, 50.000 usuários ativos mensais e pausa de projetos após uma semana de inatividade. É PostgreSQL, não MongoDB. Confira a página para os demais limites e condições.
+
+- Preços oficiais: https://supabase.com/pricing
+
+## Observação sobre Cloud Run e Vercel
+
+Cloud Run pode ter uma franquia gratuita condicionada ao uso, região e configuração de faturamento; configure alertas e limites de orçamento. Vercel Hobby tem limites próprios e o servidor Express deste projeto não deve ser considerado compatível com implantação tradicional sem adaptação para funções serverless.
+
+- Cloud Run: https://cloud.google.com/run/pricing
+- Vercel Hobby: https://vercel.com/docs/plans/hobby
+
+**Recomendação para o Alfredo neste momento:** manter a página estática no GitHub Pages; testar o pequeno servidor Express no Render; usar MongoDB Atlas Free somente depois de implementar a persistência no código. Não hospede Ollama/Qwen no Render gratuito: a memória e CPU gratuitas não são adequadas para isso. Para IA na nuvem, avalie uma API externa com cota gratuita, mantendo a chave exclusivamente no backend.
