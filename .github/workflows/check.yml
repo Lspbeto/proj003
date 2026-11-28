@@ -22,3 +22,5 @@ jobs:
         run: node --check server.js
       - name: Verificar sintaxe do navegador
         run: node --check public/app.js
+      - name: Verificar ferramentas de documentos
+        run: node --check public/document-tools.js
