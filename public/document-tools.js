@@ -4,7 +4,13 @@
  const say=(message,error=false)=>{status.textContent=message;status.style.color=error?"#a33b3b":"#315d91";};
  const need=(name)=>{if(!window[name])throw new Error("A biblioteca "+name+" não carregou. Verifique a internet e recarregue o Alfredo.");return window[name];};
  const file=(id)=>{const f=$(id).files[0];if(!f)throw new Error("Escolha um arquivo antes de continuar.");return f;};
- const download=(blob,name)=>{const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);};
+ const download=(blob,name)=>{
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download=name;a.rel="noopener";a.style.display="none";document.body.appendChild(a);
+  try{a.click();say("Arquivo preparado. Se o iPhone abrir uma prévia, use Compartilhar → Salvar em Arquivos.");}
+  catch(e){window.open(url,"_blank","noopener");}
+  setTimeout(()=>{a.remove();URL.revokeObjectURL(url);},60000);
+ };
  const safeName=name=>name.replace(/\.[^.]+$/,"").replace(/[^a-z0-9_-]+/gi,"_")||"documento";
  const withBusy=async(label,fn)=>{try{say(label+"…");await fn();say("Concluído. O arquivo foi gerado no seu aparelho.");}catch(e){console.error(e);say(e.message||"Não foi possível concluir a operação.",true);}};
  $("openDocumentTools").addEventListener("click",()=>{dialog.showModal();$("documentEditor").value=localStorage.getItem("alfredo-editor-draft")||"";});
