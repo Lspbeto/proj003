@@ -1,4 +1,4 @@
-const CACHE="alfredo-github-pages-v11-visual-pdf";
+const CACHE="alfredo-github-pages-v12-ios-windows";
 const FILES=["./","./index.html","./styles.css","./app.js","./document-tools.js","./manifest.webmanifest"];
 self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
