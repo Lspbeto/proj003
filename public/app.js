@@ -108,9 +108,19 @@ $("pdfInput").addEventListener("change",async e=>{
   if(!window.pdfjsLib){addMessage("assistant","O leitor de PDF não carregou. Verifique a conexão com a internet e tente novamente.");return;}
   try{
     const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;const pages=[];
-    for(let i=1;i<=pdf.numPages;i++){const page=await pdf.getPage(i);const c=await page.getTextContent();pages.push("\n[Página "+i+"]\n"+c.items.map(x=>x.str).join(" "));}
+    for(let i=1;i<=pdf.numPages;i++){
+      const page=await pdf.getPage(i);const content=await page.getTextContent();let pageText=content.items.map(x=>x.str).join(" ").trim();
+      if(!pageText&&window.Tesseract){
+        addMessage("assistant","A página "+i+" é digitalizada. Tentando reconhecer o texto (OCR); aguarde.");
+        const viewport=page.getViewport({scale:1.25}),canvas=document.createElement("canvas");canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
+        await page.render({canvasContext:canvas.getContext("2d"),viewport}).promise;
+        const result=await Tesseract.recognize(canvas,"por");pageText=result.data.text||"[Não foi possível reconhecer esta página.]";
+        canvas.width=canvas.height=1;
+      }else if(!pageText)pageText="[Página sem texto selecionável. Use OCR nas ferramentas de documentos.]";
+      pages.push("\n[Página "+i+"]\n"+pageText);
+    }
     showDocument(file.name,pages.join("\n").slice(0,250000));
-  }catch(_){addMessage("assistant","Não consegui extrair o texto. Este PDF pode ser digitalizado como imagem e precisar de OCR, ainda não disponível.");}
+  }catch(error){console.error(error);addMessage("assistant","Não consegui abrir este PDF. Verifique se não está protegido por senha ou danificado e tente novamente.");}
   e.target.value="";
 });
 $("removeDocument").addEventListener("click",()=>{state.documentText="";state.readingText="";$("documentPanel").classList.add("hidden");$("reader").classList.add("hidden");if("speechSynthesis"in window)speechSynthesis.cancel();});
@@ -139,10 +149,10 @@ $("readButton").addEventListener("click",()=>{
 $("pauseButton").addEventListener("click",()=>{if("speechSynthesis"in window&&speechSynthesis.speaking)speechSynthesis.pause();});
 $("stopButton").addEventListener("click",()=>{if("speechSynthesis"in window)speechSynthesis.cancel();speechQueue=[];speechIndex=0;});
 const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-if(Recognition){const recognition=new Recognition();recognition.lang="pt-BR";recognition.interimResults=false;recognition.onresult=e=>{$("messageInput").value=e.results[0][0].transcript;$("composer").requestSubmit();};recognition.onerror=recognition.onend=()=>$("micButton").classList.remove("listening");$("micButton").addEventListener("click",()=>{$("micButton").classList.add("listening");try{recognition.start();}catch(_){$("micButton").classList.remove("listening");}});}
-else $("micButton").addEventListener("click",()=>addMessage("assistant","O reconhecimento de voz não está disponível neste navegador. Você ainda pode digitar. Tente Chrome atualizado."));
+if(Recognition){const recognition=new Recognition();recognition.lang="pt-BR";recognition.interimResults=false;recognition.onresult=e=>{$("messageInput").value=e.results[0][0].transcript;$("composer").requestSubmit();};recognition.onerror=e=>{const messages={"not-allowed":"Permita o microfone nas configurações do navegador.","audio-capture":"Não encontrei um microfone disponível.","no-speech":"Não detectei fala. Tente novamente.","network":"O reconhecimento de voz precisa de internet neste navegador."};addMessage("assistant",messages[e.error]||"O microfone foi interrompido. Você pode digitar ou usar o ditado do teclado.");$("micButton").classList.remove("listening");};recognition.onend=()=>$("micButton").classList.remove("listening");$("micButton").addEventListener("click",()=>{$("micButton").classList.add("listening");try{recognition.start();}catch(_){$("micButton").classList.remove("listening");addMessage("assistant","O microfone já está em uso. Aguarde e tente novamente.");}});}
+else $("micButton").addEventListener("click",()=>{addMessage("assistant","Este navegador não oferece reconhecimento de voz integrado ao site. No iPhone e iPad, toque no campo de mensagem e use o microfone do teclado (Ditado). No Windows ou Android, você também pode usar o ditado do teclado ou do sistema.");$("messageInput").focus();});
 $("statusText").textContent="Modo independente • dados locais";document.querySelector(".status").classList.add("online");
-restoreHistory();setMode("assistant");
+restoreHistory();setMode("assistant");\ntry{const savedText=localStorage.getItem("alfredo-last-document-text"),savedName=localStorage.getItem("alfredo-last-document-name");if(savedText){state.documentText=savedText;state.readingText=savedText;$("documentName").textContent=savedName||"Documento anterior";$("documentInfo").textContent=savedText.length.toLocaleString("pt-BR")+" caracteres recuperados do armazenamento deste navegador.";$("documentPanel").classList.remove("hidden");$("reader").classList.remove("hidden");$("readerText").textContent=savedText.slice(0,50000);$("pageInfo").textContent="Documento recuperado";}}catch(_){}
 if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
 
 
