@@ -50,7 +50,9 @@ function showDocument(name,text){
   $("readerText").textContent=text.slice(0,50000);
   $("pageInfo").textContent=text.length>50000?"Prévia dos primeiros 50 mil caracteres":"Texto extraído";
   addMessage("assistant","Documento carregado! Agora posso localizar partes do texto, montar um resumo inicial, responder com trechos encontrados e ajudar com perguntas de estudo. Para ouvir, use “Ler em voz alta”.");
+  try{localStorage.setItem("alfredo-last-document-text",text.slice(0,100000));localStorage.setItem("alfredo-last-document-name",name);}catch(_){}
 }
+window.alfredoLoadText=(text,name="Texto editado")=>showDocument(name,text);
 function normalize(s){return s.toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9\s]/g," ");}
 function findRelevant(query){
   const text=state.documentText;if(!text)return [];
@@ -139,7 +141,7 @@ $("stopButton").addEventListener("click",()=>{if("speechSynthesis"in window)spee
 const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
 if(Recognition){const recognition=new Recognition();recognition.lang="pt-BR";recognition.interimResults=false;recognition.onresult=e=>{$("messageInput").value=e.results[0][0].transcript;$("composer").requestSubmit();};recognition.onerror=recognition.onend=()=>$("micButton").classList.remove("listening");$("micButton").addEventListener("click",()=>{$("micButton").classList.add("listening");try{recognition.start();}catch(_){$("micButton").classList.remove("listening");}});}
 else $("micButton").addEventListener("click",()=>addMessage("assistant","O reconhecimento de voz não está disponível neste navegador. Você ainda pode digitar. Tente Chrome atualizado."));
-$("statusText").textContent="Alfredo pronto";document.querySelector(".status").classList.add("online");
+$("statusText").textContent="Modo independente • dados locais";document.querySelector(".status").classList.add("online");
 restoreHistory();setMode("assistant");
 if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
 
