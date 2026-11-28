@@ -1,15 +1,15 @@
-# Publicação do Alfredo pelo próprio GitHub
+# Publicação independente do Alfredo pelo GitHub Pages
 
-Esta versão usa GitHub Pages e GitHub Actions. Não depende de Render, banco de dados ou servidor Node para entregar a interface.
+Esta versão utiliza apenas arquivos estáticos na pasta `public`. Não precisa de Render, Node.js, Ollama, MongoDB ou outro banco hospedado para abrir a interface e executar as ferramentas locais.
 
 1. No repositório, abra **Settings → Pages**.
 2. Em **Build and deployment → Source**, selecione **GitHub Actions**.
 3. Salve a configuração.
 4. Acesse a aba **Actions** e acompanhe o workflow “Publicar Alfredo no GitHub Pages”.
-5. Quando terminar com sucesso, abra:
+5. Quando terminar com sucesso, abra https://lspbeto.github.io/proj003/
 
-https://lspbeto.github.io/proj003/
+O frontend e as ferramentas de documentos executam no navegador. Histórico e rascunhos são guardados no localStorage daquele navegador. A primeira utilização das bibliotecas de PDF, Word, Excel e OCR requer conexão para carregar as bibliotecas externas.
 
-A primeira publicação pode levar alguns minutos. O endereço é público porque o repositório é público.
+## O que não está incluído nesta edição
 
-Observação: o GitHub Pages publica somente HTML, CSS e JavaScript. Não executa a API de IA do servidor nem armazena dados em banco. Nesta versão, PDF, leitura de voz, pesquisa externa e histórico local funcionam no navegador. A IA conversacional ainda precisa de uma solução que rode no próprio navegador ou de um serviço externo.
+O GitHub Pages não executa a API de IA. O modo de conversa e professor é local e baseado em regras e conteúdo carregado; não é uma IA generativa completa. A integração futura com Render, MongoDB ou outro serviço pode ser feita sem impedir o uso desta versão independente.
